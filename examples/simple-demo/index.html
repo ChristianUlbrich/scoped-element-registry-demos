@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Simple-Demo</title>
+    <script type="module">
+      window.setup = function () {
+        console.log('setup');
+
+        import('/src/components/index.ts').then(({ ButtonV1, ButtonV2 }) => {
+          // create a simple button
+          class UiButton extends HTMLElement {
+            constructor() {
+              super();
+              console.log('Constructing ui-button');
+              this.attachShadow({ mode: 'open' });
+            }
+
+            connectedCallback() {
+              console.log('Connected ui-button');
+              this.shadowRoot.innerHTML = `<slot>UiButtonAnyone?</slot`;
+            }
+          }
+
+          // create scoped customRegistry and associate it with a customElement
+          const scopedRegistryV1 = new CustomElementRegistry();
+
+          class ScopeV1 extends HTMLElement {
+            constructor() {
+              super();
+              this.attachShadow({
+                mode: 'open',
+                customElements: scopedRegistryV1,
+              });
+              console.log('Constructing scope-v1');
+            }
+
+            connectedCallback() {
+              console.log('Connected scope-v1');
+
+              // create custom element using the scoped registry created before
+              const scopedV1Button = document.createElement('ui-button', {
+                customElements: scopedRegistryV1,
+              });
+              console.log('Have scoped button:', scopedV1Button);
+              console.log(
+                'UiButton is a UiButton',
+                scopedV1Button instanceof UiButton,
+              );
+              this.shadowRoot.appendChild(scopedV1Button);
+            }
+          }
+
+          console.log('Will define ui-button');
+          scopedRegistryV1.define('ui-button', UiButton);
+          console.log('defined!');
+
+          customElements.define('scope-v1', ScopeV1);
+        });
+      };
+    </script>
+  </head>
+  <body onload="setup()">
+    <h1>SimpleDemo</h1>
+    <div id="scope-v1">
+      <scope-v1>
+        <!-- this is to contain an ui-button-->
+      </scope-v1>
+    </div>
+  </body>
+</html>
