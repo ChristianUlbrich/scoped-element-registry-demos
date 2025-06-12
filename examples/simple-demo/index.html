@@ -11,15 +11,15 @@
 
         import('/src/components/index.ts').then(({ ButtonV1, ButtonV2 }) => {
           // create a simple button
-          class UiButton extends HTMLElement {
+          class UiButtonV1 extends HTMLElement {
             constructor() {
               super();
-              console.log('Constructing ui-button');
+              console.log('Constructing UiButtonV1');
               this.attachShadow({ mode: 'open' });
             }
 
             connectedCallback() {
-              console.log('Connected ui-button');
+              console.log('Connected UiButtonV1');
               this.shadowRoot.innerHTML = `<slot>UiButtonAnyone?</slot`;
             }
           }
@@ -32,42 +32,82 @@
               super();
               this.attachShadow({
                 mode: 'open',
-                customElements: scopedRegistryV1,
               });
-              console.log('Constructing scope-v1');
+              console.log('Constructing ScopeV1');
             }
 
             connectedCallback() {
-              console.log('Connected scope-v1');
+              console.log('Connected ScopeV1');
 
               // create custom element using the scoped registry created before
               const scopedV1Button = document.createElement('ui-button', {
-                customElements: scopedRegistryV1,
+                customElementRegistry: scopedRegistryV1,
               });
-              console.log('Have scoped button:', scopedV1Button);
               console.log(
-                'UiButton is a UiButton',
-                scopedV1Button instanceof UiButton,
+                'UiButton is a UiButtonV1',
+                scopedV1Button instanceof UiButtonV1,
               );
               this.shadowRoot.appendChild(scopedV1Button);
             }
           }
 
-          console.log('Will define ui-button');
-          scopedRegistryV1.define('ui-button', UiButton);
-          console.log('defined!');
-
+          scopedRegistryV1.define('ui-button', UiButtonV1);
           customElements.define('scope-v1', ScopeV1);
+
+          // another button, another scoped registry
+          class UiButtonV2 extends HTMLElement {
+            constructor() {
+              super();
+              console.log('Constructing UiButtonV2');
+              this.attachShadow({ mode: 'open' });
+            }
+
+            connectedCallback() {
+              console.log('Connected UiButtonV2');
+              this.shadowRoot.innerHTML = `<slot>UiButtonV2Anyone?</slot`;
+            }
+          }
+
+          const scopedRegistryV2 = new CustomElementRegistry();
+
+          class ScopeV2 extends HTMLElement {
+            constructor() {
+              super();
+              this.attachShadow({
+                mode: 'open',
+              });
+              console.log('Constructing ScopeV2');
+            }
+
+            connectedCallback() {
+              console.log('Connected ScopeV2');
+
+              // create custom element using the scoped registry created before
+              const scopedV2Button = document.createElement('ui-button', {
+                customElementRegistry: scopedRegistryV2,
+              });
+              console.log(
+                      'UiButton is a UiButtonV2',
+                      scopedV2Button instanceof UiButtonV2,
+              );
+              this.shadowRoot.appendChild(scopedV2Button);
+            }
+          }
+
+          scopedRegistryV2.define('ui-button', UiButtonV2);
+          customElements.define('scope-v2', ScopeV2);
         });
       };
     </script>
   </head>
   <body onload="setup()">
     <h1>SimpleDemo</h1>
-    <div id="scope-v1">
       <scope-v1>
         <!-- this is to contain an ui-button-->
       </scope-v1>
+      <scope-v2>
+        <!-- this is to contain an ui-button-->
+      </scope-v2>
     </div>
   </body>
 </html>
